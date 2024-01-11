@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+  Spørgsmål færddiggjort
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="bg-white p-4 rounded shadow-sm">
+        <h2 class="text-center mb-4">Spørgsmål færddiggjort</h2>
+        <p class="text-center">Du har fuldført spørgsmålet</p>
+        <p class="text-center font-weight-bold">
+          {{ question }}
+        </p>
+        <p class="mt-4">Dine svar var:</p>
+        <ul class="list-group">
+          {% for answer in correctly_answered_list %}
+            <li class="list-group-item">{{ answer }}</li>
+          {% endfor %}
+        </ul>
+        <div class="text-center mt-4">
+          <a href="/quiz" class="btn btn-primary">Næste Spørgsmål</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

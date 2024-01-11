@@ -1,0 +1,109 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+  Quiz
+{% endblock %}
+
+{% block content %}
+  <h1 class="text-center mb-4">Udvælgelses baseret Quiz</h1>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card mt-5">
+        <div class="card-body">
+          <h4 class="text-center"><b>{{ question }}</b></h4>
+          <br />
+          <div id="alert" class="alert" role="alert" style="display: none;"></div>
+          <form id="quiz-form">
+            {% for answer in possible_answers %}
+              <div class="card mb-3 answer-card">
+                <div class="card-body">
+                  <input type="checkbox" class="answer-checkbox" id="answer{{ loop.index }}" value="{{ answer }}" />
+                  <label class="card-text" for="answer{{ loop.index }}">{{ answer }}</label>
+                </div>
+              </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary mt-3">
+              Submit<div id="spinner" class="spinner-border spinner-border-sm text-light ml-2" role="status" style="display: none;">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .answer-card {
+      cursor: pointer;
+    }
+    .answer-checkbox {
+      display: none;
+    }
+    .answer-card.selected {
+      border: 2px solid #007bff;
+    }
+  </style>
+
+  <script>
+    var answerCards = document.querySelectorAll('.answer-card')
+    for (var i = 0; i < answerCards.length; i++) {
+      answerCards[i].addEventListener('click', function (event) {
+        var checkbox = this.querySelector('.answer-checkbox')
+        checkbox.checked = !checkbox.checked
+        this.classList.toggle('selected', checkbox.checked)
+      })
+    }
+    
+    document.getElementById('quiz-form').addEventListener('submit', function (event) {
+      event.preventDefault()
+    
+      var selectedAnswers = []
+      var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+    
+      for (var i = 0; i < checkboxes.length; i++) {
+        selectedAnswers.push(checkboxes[i].value)
+      }
+    
+      document.getElementById('spinner').style.display = 'inline-block'
+    
+      // Send selectedAnswers to the server
+      fetch('/quiz-select', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ answers: selectedAnswers })
+      }).then((response) => {
+        if (response.status >= 400 && response.status < 500) {
+          response.json().then((data) => {
+            document.getElementById('spinner').style.display = 'none'
+            var alert = document.getElementById('alert')
+            alert.textContent = data.message
+            alert.className = 'alert alert-danger'
+            alert.style.display = 'block'
+          })
+        } else if (response.status >= 500) {
+          document.getElementById('spinner').style.display = 'none'
+          var alert = document.getElementById('alert')
+          alert.textContent = 'Der skete en fejl. Prøv igen senere.'
+          alert.className = 'alert alert-danger'
+          alert.style.display = 'block'
+        } else {
+          response.json().then((data) => {
+            document.getElementById('spinner').style.display = 'none'
+            var alert = document.getElementById('alert')
+            alert.textContent = data.message
+            alert.className = 'alert alert-success'
+            alert.style.display = 'block'
+            setTimeout(function () {
+              window.location.href = '/quiz-select'
+            }, 2000)
+
+            document.getElementById('quiz-form').innerHTML = ''
+          })
+        }
+      })
+    })
+  </script>
+{% endblock %}

@@ -1,0 +1,20 @@
+version: '3'
+services:
+  web:
+    build: .
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PORT=${VIRTUAL_PORT}
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    expose:
+      - 5000
+    command: gunicorn -b :5000 app:app
+    stop_grace_period: 1s
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true

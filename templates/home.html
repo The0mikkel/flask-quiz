@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+  Hjem
+{% endblock %}
+
+{% block content %}
+  <div class="text-center mb-4">
+    <h1>Velkommen til Quizzen</h1>
+    <br />
+    <p class="lead">Tryk på knappen for at starte quizzen</p>
+    <div>
+      <a href="/quiz" class="btn btn-primary btn-lg">Start Quiz</a>
+      <a href="/quiz-select" class="btn btn-secondary btn-lg">Start udvælgelses baseret Quiz</a>
+    </div>
+  </div>
+
+  <br />
+  <hr />
+  <br />
+
+  <h3>Spørgsmål i quizzen</h3>
+  <br />
+  <div class="row">
+    {% for quiz in quizzes %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm quiz-card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">{{ quiz.question }}</h5>
+          </div>
+          <div class="card-body d-flex flex-column py-4">
+            <ul class="list-group list-group-flush">
+              {% for answer in quiz.answers %}
+                <li class="list-group-item">{{ answer }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    body {
+      background: linear-gradient(to right, #1fa2ff, #12d8fa, #a6ffcb);
+    }
+    
+    .quiz-card {
+      transition: transform 0.2s;
+    }
+    
+    .quiz-card:hover {
+      transform: scale(1.02);
+    }
+  </style>
+{% endblock %}
