@@ -1,2 +1,2 @@
 Flask==3
-Gunicorn==21
+Gunicorn==22.0.0
