@@ -11,7 +11,7 @@ services:
     expose:
       - 5000
     volumes:
-      - ./questions/:/app/quizzes/
+      - ./quizzes/:/app/quizzes/
       - ./static/:/app/static/
     command: gunicorn -b :5000 app:app
     stop_grace_period: 1s
