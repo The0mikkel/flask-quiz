@@ -1,0 +1,23 @@
+[
+	{
+		"question": "Question with mulitple answers",
+		"description": "This uses other questions answers as wrong answers",
+		"answers": [
+			"Correct answer 1",
+			"Lorum ipsum"
+		]
+	},
+	{
+		"question": "Question with mulitple answers",
+		"description": "This has specified wrong answers",
+		"type": "Specified",
+		"answers": [
+			"Correct answer 2",
+			"Correct answer 3"
+		],
+		"wrong_answers": [
+			"Wrong answer 1",
+			"Wrong answer 2"
+		]
+	}
+]

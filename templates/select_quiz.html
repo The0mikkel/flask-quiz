@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Quiz
+{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1>Welcome to the Quiz Platform</h1>
+    <br />
+    <p class="lead">Select a quiz to get started</p>
+</div>
+
+<br />
+<hr />
+<br />
+
+<h2>Available Quizzes</h2>
+<br />
+<div class="row">
+    {% for quiz in quizzes %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm quiz-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ quiz.title }}</h5>
+            </div>
+            <div class="card-body d-flex flex-column py-4">
+                <p class="card-text">{{ quiz.description | markdown }}</p>
+                <a href="/quiz/{{ quiz.file_name }}" class="btn btn-primary mt-auto">Start Quiz</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-card {
+        transition: transform 0.2s;
+    }
+
+    .quiz-card:hover {
+        transform: scale(1.02);
+    }
+</style>
+{% endblock %}

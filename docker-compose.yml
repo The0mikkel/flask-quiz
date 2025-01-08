@@ -10,6 +10,9 @@ services:
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     expose:
       - 5000
+    volumes:
+      - ./questions/:/app/quizzes/
+      - ./static/:/app/static/
     command: gunicorn -b :5000 app:app
     stop_grace_period: 1s
     networks:

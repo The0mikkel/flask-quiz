@@ -1,109 +1,266 @@
 {% extends 'layout.html' %}
 
 {% block title %}
-  Quiz
+Quiz - {{ quiz.title }}
 {% endblock %}
 
 {% block content %}
-  <h1 class="text-center mb-4">Udvælgelses baseret Quiz</h1>
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card mt-5">
-        <div class="card-body">
-          <h4 class="text-center"><b>{{ question }}</b></h4>
-          <br />
-          <div id="alert" class="alert" role="alert" style="display: none;"></div>
-          <form id="quiz-form">
-            {% for answer in possible_answers %}
-              <div class="card mb-3 answer-card">
-                <div class="card-body">
-                  <input type="checkbox" class="answer-checkbox" id="answer{{ loop.index }}" value="{{ answer }}" />
-                  <label class="card-text" for="answer{{ loop.index }}">{{ answer }}</label>
-                </div>
-              </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary mt-3">
-              Submit<div id="spinner" class="spinner-border spinner-border-sm text-light ml-2" role="status" style="display: none;">
-                <span class="sr-only">Loading...</span>
-              </div>
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+<h1 class="text-center mb-4">{{ quiz.title }}</h1>
+<div class="row justify-content-center">
+	<div class="col-md-10">
+		<div class="card mt-5">
+			<div class="card-body">
+				<h4 class="text-center"><b>{{ question | markdown }}</b></h4>
+				<p>{{ description | markdown }}</p>
+				<br />
+				<div id="alert" class="alert" role="alert" style="display: none;"></div>
+				<form id="quiz-form">
+					{% for answer in possible_answers %}
+					<div class="card mb-3 answer-card">
+						<div class="card-body">
+							<input type="checkbox" class="answer-checkbox" id="answer{{ loop.index }}"
+								value="{{ answer }}" />
+							<label class="card-text" for="answer{{ loop.index }}">{{ answer | capitalize }}</label>
+						</div>
+					</div>
+					{% endfor %}
+					<button type="submit" class="btn btn-primary mt-3">
+						Submit<div id="spinner" class="spinner-border spinner-border-sm text-light ml-2" role="status"
+							style="display: none;">
+							<span class="sr-only">Loading...</span>
+						</div>
+					</button>
+				</form>
+			</div>
+		</div>
+		<div class="question-footer">
+			<p>
+				Question {{ quiz.questions_answered }} of {{ quiz.questions_total }}.<br />
+				<span id="correct-answer-len">{{correct_answers_len}}</span> correct answers for this question.<br />
+				<span id="selected-answers">0</span> selected.
+			</p>
+			<p class="text-right">
+				<!-- Blue text that redirects to the same page for next question -->
+				<a href="/quiz-select">Skip question</a><br />
+				<!-- Red text that gives up on the question, but lists the correct answers -->
+				<span id="question-give-up" class="ml-3">Give up</span>
+			</p>
+		</div>
+	</div>
+</div>
 
-  <style>
-    .answer-card {
-      cursor: pointer;
-    }
-    .answer-checkbox {
-      display: none;
-    }
-    .answer-card.selected {
-      border: 2px solid #007bff;
-    }
-  </style>
+<style>
+	.answer-card,
+	.card-text {
+		cursor: pointer;
+	}
 
-  <script>
-    var answerCards = document.querySelectorAll('.answer-card')
-    for (var i = 0; i < answerCards.length; i++) {
-      answerCards[i].addEventListener('click', function (event) {
-        var checkbox = this.querySelector('.answer-checkbox')
-        checkbox.checked = !checkbox.checked
-        this.classList.toggle('selected', checkbox.checked)
-      })
-    }
-    
-    document.getElementById('quiz-form').addEventListener('submit', function (event) {
-      event.preventDefault()
-    
-      var selectedAnswers = []
-      var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
-    
-      for (var i = 0; i < checkboxes.length; i++) {
-        selectedAnswers.push(checkboxes[i].value)
-      }
-    
-      document.getElementById('spinner').style.display = 'inline-block'
-    
-      // Send selectedAnswers to the server
-      fetch('/quiz-select', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ answers: selectedAnswers })
-      }).then((response) => {
-        if (response.status >= 400 && response.status < 500) {
-          response.json().then((data) => {
-            document.getElementById('spinner').style.display = 'none'
-            var alert = document.getElementById('alert')
-            alert.textContent = data.message
-            alert.className = 'alert alert-danger'
-            alert.style.display = 'block'
-          })
-        } else if (response.status >= 500) {
-          document.getElementById('spinner').style.display = 'none'
-          var alert = document.getElementById('alert')
-          alert.textContent = 'Der skete en fejl. Prøv igen senere.'
-          alert.className = 'alert alert-danger'
-          alert.style.display = 'block'
-        } else {
-          response.json().then((data) => {
-            document.getElementById('spinner').style.display = 'none'
-            var alert = document.getElementById('alert')
-            alert.textContent = data.message
-            alert.className = 'alert alert-success'
-            alert.style.display = 'block'
-            setTimeout(function () {
-              window.location.href = '/quiz-select'
-            }, 2000)
+	.answer-checkbox {
+		display: none;
+	}
 
-            document.getElementById('quiz-form').innerHTML = ''
-          })
-        }
-      })
-    })
-  </script>
+	.answer-card.selected {
+		border: 2px solid #007bff;
+	}
+
+	.question-footer {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 20px;
+	}
+
+	#question-give-up {
+		color: red;
+		cursor: pointer;
+	}
+
+	#question-give-up:hover {
+		text-decoration: underline;
+		color: darkred;
+	}
+
+	@media (max-width: 430px) {
+		.question-footer {
+			flex-direction: column;
+		}
+	}
+</style>
+
+<script>
+	var answerCards = document.querySelectorAll('.answer-card')
+	for (var i = 0; i < answerCards.length; i++) {
+		answerCards[i].addEventListener('click', function (event) {
+			var checkbox = this.querySelector('.answer-checkbox')
+			checkbox.checked = !checkbox.checked
+			this.classList.toggle('selected', checkbox.checked)
+
+			// Get number of selected answers
+			var selectedAnswers = document.querySelectorAll('input[type=checkbox]:checked').length
+			document.getElementById('selected-answers').textContent = selectedAnswers
+		})
+	}
+
+	document.getElementById('quiz-form').addEventListener('submit', function (event) {
+		event.preventDefault()
+
+		var selectedAnswers = []
+		var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+
+		for (var i = 0; i < checkboxes.length; i++) {
+			selectedAnswers.push(checkboxes[i].value)
+		}
+
+		document.getElementById('spinner').style.display = 'inline-block'
+
+		// Send selectedAnswers to the server
+		fetch('/quiz-select', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ answers: selectedAnswers })
+		}).then((response) => {
+			if (response.status >= 400 && response.status < 500) {
+				response.json().then((data) => {
+					document.getElementById('spinner').style.display = 'none'
+					var alert = document.getElementById('alert')
+					alert.textContent = data.message
+					alert.className = 'alert alert-danger'
+					alert.style.display = 'block'
+				})
+			} else if (response.status >= 500) {
+				document.getElementById('spinner').style.display = 'none'
+				var alert = document.getElementById('alert')
+				alert.textContent = 'Der skete en fejl. Prøv igen senere.'
+				alert.className = 'alert alert-danger'
+				alert.style.display = 'block'
+			} else {
+				response.json().then((data) => {
+					document.getElementById('spinner').style.display = 'none'
+
+					const message = data.message;
+					const answers = data.answers;
+
+					// Add alert that says the answer was correct
+					var alert = document.getElementById('alert')
+					alert.textContent = ""
+					alert.className = 'alert alert-success'
+					alert.style.display = 'block'
+
+					// Add p tag with the message
+					var p = document.createElement('p')
+					p.textContent = message
+					alert.appendChild(p)
+
+					// Add p tag, that introduces correct answers list
+					var p2 = document.createElement('p')
+					p2.textContent = 'The correct answers were:'
+					alert.appendChild(p2)
+
+					// Add ul tag with the correct answers
+					var ul = document.createElement('ul')
+					ul.className = 'list-group'
+					alert.appendChild(ul)
+
+					// Add li tags with the correct answers
+					answers.forEach(function (answer) {
+						var li = document.createElement('li')
+						li.className = 'list-group-item'
+						li.textContent = answer
+						ul.appendChild(li)
+					})
+
+					// Remove the form and show the correct answers
+					document.getElementById('quiz-form').innerHTML = ''
+
+					// Add a button to go to the next question
+					var nextQuestionButton = document.createElement('button')
+					nextQuestionButton.textContent = 'Next question'
+					nextQuestionButton.className = 'btn btn-primary mt-3'
+
+					nextQuestionButton.addEventListener('click', function () {
+						window.location.href = '/quiz-select'
+					})
+
+					document.getElementById('quiz-form').appendChild(nextQuestionButton)
+				})
+			}
+		})
+	})
+
+	document.getElementById("question-give-up").addEventListener("click", function () {
+		fetch('/quiz-select/answers', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then((response) => {
+			if (response.status >= 400 && response.status < 500) {
+				response.json().then((data) => {
+					document.getElementById('spinner').style.display = 'none'
+					var alert = document.getElementById('alert')
+					alert.textContent = data.message
+					alert.className = 'alert alert-danger'
+					alert.style.display = 'block'
+				})
+			} else if (response.status >= 500) {
+				document.getElementById('spinner').style.display = 'none'
+				var alert = document.getElementById('alert')
+				alert.textContent = 'Der skete en fejl. Prøv igen senere.'
+				alert.className = 'alert alert-danger'
+				alert.style.display = 'block'
+			} else {
+				response.json().then((data) => {
+					document.getElementById('spinner').style.display = 'none'
+
+					const message = data.message;
+					const answers = data.answers;
+
+					// Add alert that says the answer was correct
+					var alert = document.getElementById('alert')
+					alert.textContent = ""
+					alert.className = 'alert alert-warning'
+					alert.style.display = 'block'
+
+					// Add p tag with the message
+					var p = document.createElement('p')
+					p.textContent = message
+					alert.appendChild(p)
+
+					// Add p tag, that introduces correct answers list
+					var p2 = document.createElement('p')
+					p2.textContent = 'The correct answers were:'
+					alert.appendChild(p2)
+
+					// Add ul tag with the correct answers
+					var ul = document.createElement('ul')
+					ul.className = 'list-group'
+					alert.appendChild(ul)
+
+					// Add li tags with the correct answers
+					answers.forEach(function (answer) {
+						var li = document.createElement('li')
+						li.className = 'list-group-item'
+						li.textContent = answer
+						ul.appendChild(li)
+					})
+
+					// Remove the form and show the correct answers
+					document.getElementById('quiz-form').innerHTML = ''
+
+					// Add a button to go to the next question
+					var nextQuestionButton = document.createElement('button')
+					nextQuestionButton.textContent = 'Next question'
+					nextQuestionButton.className = 'btn btn-primary mt-3'
+
+					nextQuestionButton.addEventListener('click', function () {
+						window.location.href = '/quiz-select'
+					})
+
+					document.getElementById('quiz-form').appendChild(nextQuestionButton)
+				})
+			}
+		})
+	})
+</script>
 {% endblock %}

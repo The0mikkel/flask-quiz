@@ -8,9 +8,11 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 
 def get_quizzes():
-    with open("questions.json", "r") as f:
-        questions = json.load(f)
-    return questions
+    try:
+        with open("questions.json", "r") as f:
+            return json.load(f)
+    except:
+        return []
 
 def reset_session():
     session['quiz'] = {
@@ -27,7 +29,7 @@ def select_question():
     question = random.choice(session['questions'])
     session['questions'].remove(question)
     
-    return question["question"], question["answers"]
+    return question["question"], question["answers"], (question["type"] if "type" in question else "Standard"), (question["wrong_answers"] if "wrong_answers" in question else [])
 
 def check_answer(correct_answers, answer, get_index = False):
     answer = answer.lower()
@@ -45,9 +47,11 @@ def set_question():
     if 'quiz' not in session:
         reset_session()
     if session['quiz']['question'] is None:
-        question, correct_answers = select_question()
+        question, correct_answers, answer_type, wrong_answers = select_question()
         session['quiz']['question'] = question
+        session['quiz']['type'] = answer_type
         session['quiz']['correct_answers'] = correct_answers
+        session['quiz']['wrong_answers'] = wrong_answers.copy()
         session['quiz']['remaining_answers'] = correct_answers.copy()
 
 @app.route('/complete')
@@ -165,17 +169,28 @@ def select_multiple_choice_question():
     question = random.choice(session['questions'])
     session['questions'].remove(question)
     
-    correct_answers = question["answers"]
-    all_answers = [ans for q in get_quizzes() for ans in q['answers']]
+    question_type = (question["type"] if "type" in question else "Standard")
     
+    correct_answers = question["answers"]
+    
+    # Specified question have defined correct and wrong answers
+    if question_type == "Specified":
+        all_answers = question["wrong_answers"] + question["answers"]
+    else:
+        all_answers = [ans for q in get_quizzes() for ans in q['answers']]
+        
     all_answers = [answer.lower() for answer in all_answers]
     correct_answers = [answer.lower() for answer in correct_answers]
 
-    all_answers = [answer for answer in all_answers if answer not in correct_answers]
+    wrong_answers = [answer for answer in all_answers if answer not in correct_answers]
     
-    random.shuffle(all_answers)
+    random.shuffle(wrong_answers)
     
-    possible_answers = correct_answers + all_answers[:int((0.5 * len(correct_answers)) + 4)]
+    if question_type == "Specified":
+        possible_answers = correct_answers + wrong_answers
+    else:
+        possible_answers = correct_answers + wrong_answers[:int((0.5 * len(correct_answers)) + 4)]
+        
     random.shuffle(possible_answers)
     
     return question["question"], correct_answers, possible_answers
