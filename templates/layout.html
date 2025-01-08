@@ -1,59 +1,137 @@
 <html lang="en">
 
 <head>
-  <title>
-    {% block title %}
-    Quiz
-    {% endblock %}
-  </title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-  <script defer data-domain="quiz.hel1.themikkel.dk"
-    src="https://analytics.hel1.hetzner.themikkel.dk/js/script.js"></script>
-  <meta charset="utf-8" />
-  <meta name="description" content="Quiz" />
-  <meta name="author" content="themikkel" />
-  <meta http-equiv="content-language" content="da" />
+	<title>
+		{% block title %}
+		Quiz
+		{% endblock %}
+	</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+	<script defer data-domain="quiz.hel1.themikkel.dk"
+		src="https://analytics.hel1.hetzner.themikkel.dk/js/script.js"></script>
+	<meta charset="utf-8" />
+	<meta name="description" content="Quiz" />
+	<meta name="author" content="themikkel" />
+	<meta http-equiv="content-language" content="da" />
+	<style>
+		:root {
+			--bg-color: #ffffff;
+			--text-color: #000000;
+			--link-color: #007bff;
+			--footer-bg-color: #f8f9fa;
+		}
+
+		[data-theme="dark"] {
+			--bg-color: #121212;
+			--text-color: #ffffff;
+			--link-color: #bb86fc;
+			--footer-bg-color: #1f1f1f;
+		}
+
+		body {
+			background-color: var(--bg-color);
+			color: var(--text-color);
+		}
+
+		a {
+			color: var(--link-color);
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: var(--link-color);
+			filter: brightness(85%);
+		}
+
+		footer {
+			background-color: var(--footer-bg-color);
+		}
+
+		/* Ensure card bodies aligns with dark theme */
+		[data-theme="dark"] .card,
+		[data-theme="dark"] .list-group-item {
+			background-color: #1f1f1f;
+		}
+	</style>
 </head>
 
-<body class="bg-light d-flex flex-column">
-  <div class="container py-5 flex-grow-1">
-    {% block content %}
+<body class="d-flex flex-column" data-theme="">
+	<div class="container py-5 flex-grow-1">
+		{% block content %}
 
-    {% endblock %}
-  </div>
-  <footer class="mb-0 text-muted border-top text-center bg-white">
-    <p class="small text-secondary">
-      <a class="text-decoration-none" href="/reset">Reset the game</a> - created by <a class="text-decoration-none"
-        href="https://themikkel.dk">themikkel</a> - Copyright &copy; {{
-      now.year }}
-    </p>
-  </footer>
+		{% endblock %}
+	</div>
+	<footer id="footer" class="mb-0 text-muted border-top text-center bg-dark">
+		<p class="small text-secondary">
+			<a class="text-decoration-none" href="/reset">Reset the game</a> - created by <a
+				class="text-decoration-none" href="https://themikkel.dk">themikkel</a> - Copyright &copy; {{
+			now.year }}
 
-  <style>
-    body {
-      padding-bottom: 60px;
-      /* Adjust to match footer height */
-    }
+			<!-- Pretty toggle, with the current theme displayed -->
+			<span>Theme: <span id="theme-toggle" onclick="toggleTheme()" style="cursor: pointer;">Light</span></span>
+		</p>
+	</footer>
 
-    footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      height: 50px;
-      /* Adjust to desired footer height */
-      line-height: 50px;
-      /* Vertically center the text there */
-    }
-  </style>
-  {% block extra_css %}
+	<style>
+		body {
+			padding-bottom: 60px;
+			/* Adjust to match footer height */
+		}
 
-  {% endblock %}
-  {% block extra_js %}
+		footer {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+			height: 50px;
+			/* Adjust to desired footer height */
+			line-height: 50px;
+			/* Vertically center the text there */
+		}
+	</style>
 
-  {% endblock %}
+	<script>
+
+		// Check for saved user preference, if any, on load of the website
+		if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+			document.body.setAttribute('data-theme', 'dark');
+		} else {
+			document.body.removeAttribute('data-theme');
+		}
+
+		// Toggle theme function
+		function toggleTheme() {
+			if (document.body.getAttribute('data-theme') === 'dark') {
+				document.body.removeAttribute('data-theme');
+				localStorage.setItem('theme', 'light');
+			} else {
+				document.body.setAttribute('data-theme', 'dark');
+				localStorage.setItem('theme', 'dark');
+			}
+			updateThemeButton();
+		}
+
+		function getTheme() {
+			return document.body.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
+		}
+
+		function updateThemeButton() {
+			document.getElementById('theme-toggle').innerText = getTheme().charAt(0).toUpperCase() + getTheme().slice(1);
+
+			if (getTheme() === 'dark') {
+				document.getElementById('theme-toggle').style.color = '#bb86fc';
+				document.getElementById('footer').classList.add('bg-dark');
+				document.getElementById('footer').classList.remove('bg-light');
+			} else {
+				document.getElementById('theme-toggle').style.color = '#007bff';
+				document.getElementById('footer').classList.add('bg-light');
+				document.getElementById('footer').classList.remove('bg-dark');
+			}
+		}
+		updateThemeButton();
+	</script>
 </body>
 
 </html>

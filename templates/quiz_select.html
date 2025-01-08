@@ -55,6 +55,10 @@ Quiz - {{ quiz.title }}
 		cursor: pointer;
 	}
 
+	[data-theme="dark"] .answer-card {
+		border: 1px solid #343a40;
+	}
+
 	.answer-checkbox {
 		display: none;
 	}
@@ -67,6 +71,10 @@ Quiz - {{ quiz.title }}
 		display: flex;
 		justify-content: space-between;
 		margin-top: 20px;
+	}
+
+	[data-theme="dark"] .alert .list-group-item {
+		background-color: transparent;
 	}
 
 	#question-give-up {
