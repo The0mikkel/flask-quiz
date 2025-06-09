@@ -20,7 +20,8 @@ Quiz - {{ quiz.title }}
 						<div class="card-body">
 							<input type="checkbox" class="answer-checkbox" id="answer{{ loop.index }}"
 								value="{{ answer }}" />
-							<label class="card-text" for="answer{{ loop.index }}">{{ answer | capitalize }}</label>
+							<label class="card-text" for="answer{{ loop.index }}">
+								{{ answer | capitalize | markdown }}</label>
 						</div>
 					</div>
 					{% endfor %}
@@ -53,6 +54,10 @@ Quiz - {{ quiz.title }}
 	.answer-card,
 	.card-text {
 		cursor: pointer;
+	}
+
+	.card-text p {
+		margin-bottom: 0;
 	}
 
 	[data-theme="dark"] .answer-card {
@@ -174,7 +179,7 @@ Quiz - {{ quiz.title }}
 					answers.forEach(function (answer) {
 						var li = document.createElement('li')
 						li.className = 'list-group-item'
-						li.textContent = answer
+						li.textContent = answer.charAt(0).toUpperCase() + answer.slice(1)
 						ul.appendChild(li)
 					})
 
@@ -249,7 +254,7 @@ Quiz - {{ quiz.title }}
 					answers.forEach(function (answer) {
 						var li = document.createElement('li')
 						li.className = 'list-group-item'
-						li.textContent = answer
+						li.textContent = answer.charAt(0).toUpperCase() + answer.slice(1)
 						ul.appendChild(li)
 					})
 
