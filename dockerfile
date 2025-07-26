@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.12-alpine
+FROM python:3.14.0rc1-alpine
 
 # Install dependencies needed for building Python packages
 RUN apk add --no-cache build-base libffi-dev
